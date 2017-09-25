@@ -1,6 +1,6 @@
 //var ConvertLib = artifacts.require("./ConvertLib.sol");
 //var MetaCoin = artifacts.require("./MetaCoin.sol");
-var ProtexCoinCrowdsale = artifacts.require("./ProtexCoinCrowdsale.sol")
+var ProtexCoinCrowdsale = artifacts.require("./ProtexTokenCrowdsale.sol")
 
 
 module.exports = function(deployer, network, accounts) {
@@ -10,5 +10,5 @@ module.exports = function(deployer, network, accounts) {
   const rate = new web3.BigNumber(1000)
   const wallet = web3.eth.accounts[0]
 
-  deployer.deploy(ProtexCoinCrowdsale, startBlock, endBlock, rate, wallet);
+  deployer.deploy(ProtexTokenCrowdsale, startBlock, endBlock, rate, wallet);
 };
