@@ -1,5 +1,7 @@
 pragma solidity ^0.4.8;
 
+//zeppelin safe math for attack prevention
+
 contract SafeMath{
   function safeMul(uint a, uint b) internal returns (uint) {
     uint c = a * b;
@@ -31,10 +33,11 @@ contract SafeMath{
 	}
 }
 
+//erc20 token standard implementable
 
 contract ERC20{
 
- //function totalSupply() constant returns (uint256 totalSupply) {}
+  //function totalSupply() constant returns (uint256 totalSupply) {}
 	//function balanceOf(address _owner) constant returns (uint256 balance) {}
 	//function transfer(address _recipient, uint256 _value) returns (bool success) {}
 	//function transferFrom(address _from, address _recipient, uint256 _value) returns (bool success) {}
@@ -44,12 +47,12 @@ contract ERC20{
 	event Transfer(address indexed _from, address indexed _recipient, uint256 _value);
 	event Approval(address indexed _owner, address indexed _spender, uint256 _value);
 
-
 }
 
 
-contract ProtexSale is ERC20, SafeMath{
+//the Protex token sale
 
+contract ProtexSale is ERC20, SafeMath{
   
   mapping(address => uint256) balances;
 
@@ -89,10 +92,9 @@ contract ProtexSale is ERC20, SafeMath{
       return allowed[_owner][_spender];
   }
 
-
-
-
-  uint256 public endTime;
+  uint256 public preSaleEndTime;
+  uint256 public tokenSaleEndTime;
+  uint256 public tokenSaleStartTime;
 
   modifier during_offering_time(){
     if (now >= endTime){
@@ -112,6 +114,7 @@ contract ProtexSale is ERC20, SafeMath{
     }
 
     uint tokens = safeDiv(safeMul(msg.value, price), 1 ether);
+
     totalSupply = safeAdd(totalSupply, tokens);
 
     balances[recipient] = safeAdd(balances[recipient], tokens);
@@ -121,20 +124,16 @@ contract ProtexSale is ERC20, SafeMath{
     }
   }
 
-
-
-
   string  public name = "Protex Token";
   string  public symbol = "PTX";
   uint  public decimals = 18;
   uint256 public INITIAL_SUPPLY = 1000000000000000000000000000;
   //uint256  totalSupply;
-  uint256 public price;
+  uint256 public tokenSalePrice;
   uint256 public preSalePrice;
-  uint256 public tier1Price;
-  uint256 public tier2Price;
-  uint256 public tier3Price;
-
+  uint256 public tier1Bonus;
+  uint256 public tier2Bonus;
+  uint256 public tier3Bonus;
 
   address public owner;
  // uint256 public endTime;
@@ -144,9 +143,18 @@ contract ProtexSale is ERC20, SafeMath{
     balances[msg.sender] = INITIAL_SUPPLY;  // Give all of the initial tokens to the contract deployer.
     endTime = now + 1 weeks;
     owner   = msg.sender;
-    price   = 9000;
+    tokenSalePrice   = 4000;
+    preSalePrice = 5000;
+
+    tier1Bonus = 10;
+    tier2Bonus = 5;
+
+    preSaleEndTime = 4502763;
+    tokenSaleStartTime = 4540880;
+    tokenSaleEndTime = 4693348; 
+
+
+
   }
 
 }
-
-
