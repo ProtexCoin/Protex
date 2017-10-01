@@ -1,6 +1,18 @@
+/*
+Smart contract for the Token Sale of Protex Tokens (PTX). 
+
+
+
+
+*/
+
+
+
+
+
 pragma solidity ^0.4.8;
 
-//zeppelin safe math for attack prevention
+//zeppelin safe math for security against potential attacks
 
 contract SafeMath{
   function safeMul(uint a, uint b) internal returns (uint) {
@@ -53,6 +65,26 @@ contract ERC20{
 //the Protex token sale
 
 contract ProtexSale is ERC20, SafeMath{
+
+
+  string  public name = "Protex Token";
+  string  public symbol = "PTX";
+  uint  public decimals = 18;
+  uint256 public INITIAL_SUPPLY = 1000000000000000000000000000;
+  uint256 public PRIMARY_BONUS = 10;
+  uint256 public SECONDARY_BONUS = 5;
+  //uint256  totalSupply;
+  uint256 public TOKEN_SALE_PRICE = 4000000000000000000000; //change back to 4
+  uint256 public PRE_SALE_PRICE = 5000000000000000000000;
+  uint256 public preSalePurchased;
+  uint256 public tokenSalePurchased;
+  uint256 public PRE_SALE_CAP = 200000000000000000000000000;
+  uint256 public TOKEN_SALE_CAP = 700000000000000000000000000;
+  uint256 public PRE_SALE_END_TIME = 4502763;
+  uint256 public TOKEN_SALE_START_TIME = 4540880;
+  uint256 public TOKEN_SALE_END_TIME = 4693348;
+  uint256 public ONE_WEEK = 38117;
+
   
   mapping(address => uint256) balances;
 
@@ -92,48 +124,64 @@ contract ProtexSale is ERC20, SafeMath{
       return allowed[_owner][_spender];
   }
 
-  uint256 public preSaleEndTime;
-  uint256 public tokenSaleEndTime;
-  uint256 public tokenSaleStartTime;
+  function () payable {
 
-  modifier during_offering_time(){
-    if (now >= endTime){
-      revert();
-    }else{
-      _;
-    }
-  }
-
-  function () payable during_offering_time {
-    createTokens(msg.sender);
-  }
-
-  function createTokens(address recipient) payable {
-    if (msg.value == 0) {
+    if (msg.value == 0){ //empty contribution
       revert();
     }
 
-    uint tokens = safeDiv(safeMul(msg.value, price), 1 ether);
+    if (block.number <= PRE_SALE_END_TIME) {
 
-    totalSupply = safeAdd(totalSupply, tokens);
+      //do pre-sale stuff
+      uint tokens = safeDiv(safeMul(msg.value, PRE_SALE_PRICE), 1 ether);
 
-    balances[recipient] = safeAdd(balances[recipient], tokens);
 
-    if (!owner.send(msg.value)) {
+      if (preSalePurchased + tokens > PRE_SALE_CAP){ //enforce the cap
+        revert();
+      }
+      
+
+      preSalePurchased = safeAdd(preSalePurchased, tokens);
+      balances[msg.sender] = safeAdd(balances[msg.sender], tokens);
+      balances[owner] = safeSub(balances[owner], tokens);
+
+    }
+    else if (block.number <= TOKEN_SALE_END_TIME && block.number >= TOKEN_SALE_START_TIME ){
+      //do token-sale stuff
+
+      tokens = safeDiv(safeMul(msg.value, TOKEN_SALE_PRICE), 1 ether);
+
+      if (tokenSalePurchased + tokens < TOKEN_SALE_CAP){
+        if (block.number <= TOKEN_SALE_START_TIME + ONE_WEEK){
+          tokens = safeAdd(tokens, safeDiv( safeMul(tokens, PRIMARY_BONUS), 100) );
+        }
+        else if (block.number <= TOKEN_SALE_START_TIME + safeMul(ONE_WEEK, 2)){
+          tokens = safeAdd(tokens, safeDiv(safeMul(tokens, SECONDARY_BONUS), 100) );
+        }
+
+        tokenSalePurchased = safeAdd(tokenSalePurchased, tokens);
+        balances[msg.sender] = safeAdd(balances[msg.sender], tokens);
+        balances[owner] = safeSub(balances[owner], tokens);
+
+      }
+      else{
+        revert();
+      }
+
+
+    }
+    else{ //not during an eligible period
+      revert();
+    }
+
+    
+    //sendTokens(msg.sender);
+
+    if (!owner.send(msg.value)){ //send the eth
       revert();
     }
   }
 
-  string  public name = "Protex Token";
-  string  public symbol = "PTX";
-  uint  public decimals = 18;
-  uint256 public INITIAL_SUPPLY = 1000000000000000000000000000;
-  //uint256  totalSupply;
-  uint256 public tokenSalePrice;
-  uint256 public preSalePrice;
-  uint256 public tier1Bonus;
-  uint256 public tier2Bonus;
-  uint256 public tier3Bonus;
 
   address public owner;
  // uint256 public endTime;
@@ -141,19 +189,11 @@ contract ProtexSale is ERC20, SafeMath{
   function ProtexSale() {
     totalSupply = INITIAL_SUPPLY;
     balances[msg.sender] = INITIAL_SUPPLY;  // Give all of the initial tokens to the contract deployer.
-    endTime = now + 1 weeks;
     owner   = msg.sender;
-    tokenSalePrice   = 4000;
-    preSalePrice = 5000;
+  
 
-    tier1Bonus = 10;
-    tier2Bonus = 5;
-
-    preSaleEndTime = 4502763;
-    tokenSaleStartTime = 4540880;
-    tokenSaleEndTime = 4693348; 
-
-
+    preSalePurchased = 0;
+    tokenSalePurchased = 0;
 
   }
 
