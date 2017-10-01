@@ -1,9 +1,7 @@
 /*
 Smart contract for the Token Sale of Protex Tokens (PTX). 
 
-
-
-
+Owned and developed by Protex, LLC.
 */
 
 
@@ -70,26 +68,28 @@ contract ProtexSale is ERC20, SafeMath{
   string  public name = "Protex Token";
   string  public symbol = "PTX";
   uint  public decimals = 18;
-  uint256 public INITIAL_SUPPLY = 1000000000000000000000000000;
-  uint256 public PRIMARY_BONUS = 10;
-  uint256 public SECONDARY_BONUS = 5;
-  //uint256  totalSupply;
-  uint256 public TOKEN_SALE_PRICE = 4000000000000000000000; //change back to 4
-  uint256 public PRE_SALE_PRICE = 5000000000000000000000;
-  uint256 public preSalePurchased;
-  uint256 public tokenSalePurchased;
-  uint256 public PRE_SALE_CAP = 200000000000000000000000000;
-  uint256 public TOKEN_SALE_CAP = 700000000000000000000000000;
-  uint256 public PRE_SALE_END_TIME = 4502763;
-  uint256 public TOKEN_SALE_START_TIME = 4540880;
-  uint256 public TOKEN_SALE_END_TIME = 4693348;
-  uint256 public ONE_WEEK = 38117;
+  uint256 public INITIAL_SUPPLY = 1000000000000000000000000000; //1 billion circulating supply
+  uint256 public PRIMARY_BONUS = 10; //10% bonus for contributors in the first week 
+  uint256 public SECONDARY_BONUS = 5; //5% bonus for contributors in the second week
+  uint256 public totalSupply; //total supply of PTX
+  uint256 public TOKEN_SALE_PRICE = 4000000000000000000000; //1 ETH = 4000 PTX in the token sale
+  uint256 public PRE_SALE_PRICE = 5000000000000000000000; //1 ETH = 5000 PTX in the pre sale
+  uint256 public preSalePurchased; //counter for tokens purchased in pre sale
+  uint256 public tokenSalePurchased; //counter for tokens puchsed in token sale
+  uint256 public PRE_SALE_CAP = 200000000000000000000000000; //200,000,000 PTX available for pre-sale
+  uint256 public TOKEN_SALE_CAP = 700000000000000000000000000; //700,000,000 PTX available for token sale
+  uint256 public PRE_SALE_END_TIME = 4502763; //end of pre-sale
+  uint256 public TOKEN_SALE_START_TIME = 4540880; //beginning of token sale (November 6th)
+  uint256 public TOKEN_SALE_END_TIME = 4693348; //end of token sale (December 4th)
+  uint256 public ONE_WEEK = 38117; //number of blocks in one week
 
   
-  mapping(address => uint256) balances;
+  mapping(address => uint256) balances; //mapping of balances from addresses to amounts of PTX
 
-  uint256 public totalSupply;
 
+/*
+ERC 20 tokens
+*/
 
   function balanceOf(address _owner) constant returns (uint256 balance) {
       return balances[_owner];
@@ -124,47 +124,52 @@ contract ProtexSale is ERC20, SafeMath{
       return allowed[_owner][_spender];
   }
 
+
+
+  //default function for handling contributions
+
   function () payable {
 
     if (msg.value == 0){ //empty contribution
       revert();
     }
 
-    if (block.number <= PRE_SALE_END_TIME) {
+    if (block.number <= PRE_SALE_END_TIME) { //presale contribution
 
-      //do pre-sale stuff
-      uint tokens = safeDiv(safeMul(msg.value, PRE_SALE_PRICE), 1 ether);
+      uint tokens = safeDiv(safeMul(msg.value, PRE_SALE_PRICE), 1 ether); //apply pre-sale rate
 
-
-      if (preSalePurchased + tokens > PRE_SALE_CAP){ //enforce the cap
+      if (preSalePurchased + tokens > PRE_SALE_CAP){ //enforce the cap of 200,000,000
         revert();
       }
       
-
-      preSalePurchased = safeAdd(preSalePurchased, tokens);
-      balances[msg.sender] = safeAdd(balances[msg.sender], tokens);
-      balances[owner] = safeSub(balances[owner], tokens);
+      //perform PTX transfer
+      preSalePurchased = safeAdd(preSalePurchased, tokens); //increment counter
+      balances[msg.sender] = safeAdd(balances[msg.sender], tokens); //send PTX to contributor
+      balances[owner] = safeSub(balances[owner], tokens); //decrease PTX of owner
 
     }
-    else if (block.number <= TOKEN_SALE_END_TIME && block.number >= TOKEN_SALE_START_TIME ){
-      //do token-sale stuff
 
-      tokens = safeDiv(safeMul(msg.value, TOKEN_SALE_PRICE), 1 ether);
+    else if (block.number <= TOKEN_SALE_END_TIME && block.number >= TOKEN_SALE_START_TIME ){ //token sale contribution
 
-      if (tokenSalePurchased + tokens < TOKEN_SALE_CAP){
-        if (block.number <= TOKEN_SALE_START_TIME + ONE_WEEK){
-          tokens = safeAdd(tokens, safeDiv( safeMul(tokens, PRIMARY_BONUS), 100) );
-        }
-        else if (block.number <= TOKEN_SALE_START_TIME + safeMul(ONE_WEEK, 2)){
-          tokens = safeAdd(tokens, safeDiv(safeMul(tokens, SECONDARY_BONUS), 100) );
+      tokens = safeDiv(safeMul(msg.value, TOKEN_SALE_PRICE), 1 ether); //apply token sale rate
+
+      if (tokenSalePurchased + tokens < TOKEN_SALE_CAP){ //enforce the cap of 700,000,000
+
+        if (block.number <= TOKEN_SALE_START_TIME + ONE_WEEK){ //within the first week
+          tokens = safeAdd(tokens, safeDiv( safeMul(tokens, PRIMARY_BONUS), 100) ); //give 10% bonus
         }
 
-        tokenSalePurchased = safeAdd(tokenSalePurchased, tokens);
-        balances[msg.sender] = safeAdd(balances[msg.sender], tokens);
-        balances[owner] = safeSub(balances[owner], tokens);
+        else if (block.number <= TOKEN_SALE_START_TIME + safeMul(ONE_WEEK, 2)){ //within second week
+          tokens = safeAdd(tokens, safeDiv(safeMul(tokens, SECONDARY_BONUS), 100) ); //give 5% bonus
+        }
+
+        //perform PT transfer
+        tokenSalePurchased = safeAdd(tokenSalePurchased, tokens); //increment counter
+        balances[msg.sender] = safeAdd(balances[msg.sender], tokens); //send PTX
+        balances[owner] = safeSub(balances[owner], tokens); //decrease PTX of owner
 
       }
-      else{
+      else{ //over the cap
         revert();
       }
 
@@ -174,25 +179,20 @@ contract ProtexSale is ERC20, SafeMath{
       revert();
     }
 
-    
-    //sendTokens(msg.sender);
-
-    if (!owner.send(msg.value)){ //send the eth
+    if (!owner.send(msg.value)){ //send the eth contribution to owner
       revert();
     }
   }
 
+  address public owner; //the owner of the contract and beneficiary of the token sale
 
-  address public owner;
- // uint256 public endTime;
-
-  function ProtexSale() {
-    totalSupply = INITIAL_SUPPLY;
+  function ProtexSale() { //constructor
+    totalSupply = INITIAL_SUPPLY; //set total supply
     balances[msg.sender] = INITIAL_SUPPLY;  // Give all of the initial tokens to the contract deployer.
-    owner   = msg.sender;
+    owner   = msg.sender; //set owner to deployer
   
-
-    preSalePurchased = 0;
+    //start counters at 0
+    preSalePurchased = 0; 
     tokenSalePurchased = 0;
 
   }
