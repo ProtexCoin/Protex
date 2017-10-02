@@ -61,8 +61,8 @@ contract ERC20{
 contract ProtexSale is ERC20, SafeMath{
 
 
-  string  public name = "Protex Test Token";
-  string  public symbol = "PTT";
+  string  public name = "Protex Token";
+  string  public symbol = "PTX";
   uint  public decimals = 18;
   uint256 public INITIAL_SUPPLY = 1000000000000000000000000000; //1 billion circulating supply
   uint256 public PRIMARY_BONUS = 10; //10% bonus for contributors in the first week 
@@ -72,16 +72,14 @@ contract ProtexSale is ERC20, SafeMath{
   uint256 public PRE_SALE_PRICE = 5000000000000000000000; //1 ETH = 5000 PTX in the pre sale
   uint256 public preSalePurchased; //counter for tokens purchased in pre sale
   uint256 public tokenSalePurchased; //counter for tokens puchsed in token sale
-  uint256 public PRE_SALE_CAP = 50000000000000000000;//200000000000000000000000000; //200,000,000 PTX available for pre-sale
-  uint256 public TOKEN_SALE_CAP = 50000000000000000000;//700000000000000000000000000; //700,000,000 PTX available for token sale
-  uint256 public PRE_SALE_END_TIME = 4327050;//4502763; //end of pre-sale
-  uint256 public TOKEN_SALE_START_TIME = 4327100;//4540880; //beginning of token sale (November 6th)
-  uint256 public TOKEN_SALE_END_TIME = 4693348; //end of token sale (December 4th)
+  uint256 public PRE_SALE_CAP = 200000000000000000000000000; //200,000,000 PTX available for pre-sale
+  uint256 public TOKEN_SALE_CAP = 700000000000000000000000000; //700,000,000 PTX available for token sale
+  uint256 public PRE_SALE_END_TIME = 4486055; //end of pre-sale
+  uint256 public TOKEN_SALE_START_TIME = 4524221; //beginning of token sale (November 6th)
+  uint256 public TOKEN_SALE_END_TIME = 4676729; //end of token sale (December 4th)
   uint256 public ONE_WEEK = 38117; //number of blocks in one week
-
   
   mapping(address => uint256) balances; //mapping of balances from addresses to amounts of PTX
-
 
 /*
 ERC 20 tokens
@@ -119,8 +117,6 @@ ERC 20 tokens
   function allowance(address _owner, address _spender) constant returns (uint256 remaining) {
       return allowed[_owner][_spender];
   }
-
-
 
   //default function for handling contributions
 
@@ -169,7 +165,6 @@ ERC 20 tokens
         revert();
       }
 
-
     }
     else{ //not during an eligible period
       revert();
@@ -192,5 +187,4 @@ ERC 20 tokens
     tokenSalePurchased = 0;
 
   }
-
 }
