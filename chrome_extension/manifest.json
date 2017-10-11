@@ -1,0 +1,21 @@
+{
+  "manifest_version": 2,
+
+  "name": "Protex Chrome Extension",
+  "description": "This extension allows the user to contribute browsing data to the Protex platform in exchange for crypto currency.",
+  "version": "1.0",
+
+  "browser_action": {
+    "default_icon": "icon.png",
+    "default_popup": "popup.html"
+  },
+  "optional_permissions" [ "background", ""],
+  "permissions": [
+    "activeTab",
+    "storage",
+    "browsingData",
+    "cookies",
+    "storage",
+
+  ]
+}
