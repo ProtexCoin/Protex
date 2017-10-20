@@ -9,6 +9,7 @@
     "default_icon": "icon.png",
     "default_popup": "popup.html"
   },
+  
   "optional_permissions" [ "background", ""],
   "permissions": [
     "activeTab",

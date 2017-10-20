@@ -9,6 +9,12 @@
   //zeppelin safe math for security against potential attacks
 
   contract SafeMath{
+    /*
+    function assert(bool assertion) internal {
+        if (!assertion) {
+          revert();
+        }
+    }*/
     function safeMul(uint a, uint b) internal returns (uint) {
       uint c = a * b;
       assert(a == 0 || c / a == b);
@@ -32,11 +38,7 @@
       	assert(c >= a);
       	return c;
     }
-  	function assert(bool assertion) internal {
-  	    if (!assertion) {
-  	      revert();
-  	    }
-  	}
+  	
   }
 
   //erc20 token standard implementable
@@ -133,9 +135,16 @@
         }
         
         //perform PTX transfer
-        preSalePurchased = safeAdd(preSalePurchased, tokens); //increment counter
+        /*preSalePurchased = safeAdd(preSalePurchased, tokens); //increment counter
         balances[msg.sender] = safeAdd(balances[msg.sender], tokens); //send PTX to contributor
         balances[owner] = safeSub(balances[owner], tokens); //decrease PTX of owner
+        Transfer(owner, msg.sender, tokens);*/
+        bool success = transferFrom(owner, msg.sender, tokens);
+
+        if(!success){
+          //revert();
+        }
+
 
       }
 
@@ -154,9 +163,16 @@
           }
 
           //perform PT transfer
+          /*
           tokenSalePurchased = safeAdd(tokenSalePurchased, tokens); //increment counter
           balances[msg.sender] = safeAdd(balances[msg.sender], tokens); //send PTX
           balances[owner] = safeSub(balances[owner], tokens); //decrease PTX of owner
+          */
+          bool success1 = transferFrom(owner, msg.sender, tokens);
+          if(!success1){
+            //revert();
+          }
+
 
         }
         else{ //over the cap
